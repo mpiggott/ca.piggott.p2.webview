@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="ca.piggott.p2.site.webview.feature"
+      label="%featureName"
+      version="0.0.1.qualifier">
+
+   <plugin
+         id="ca.piggott.p2.site.webview"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+   <plugin
+         id="ca.piggott.p2.site.webview.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+</feature>

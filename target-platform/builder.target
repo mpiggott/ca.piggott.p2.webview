@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.6"?>
+
+<target name="builder" sequenceNumber="1">
+<locations>
+<location includeAllPlatforms="false" includeMode="planner" includeSource="false" type="InstallableUnit">
+<unit id="org.eclipse.core.runtime.feature.feature.group" version="1.0.0.v20110124-7H7KFD3BpeIkVMwWWTbPVXIyOd13"/>
+<unit id="org.eclipse.sdk.ide" version="3.7.0.I20110613-1736"/>
+<unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.7.0.v20110519-9N7sHDJGMMn4xUrxSmFfL7O39XLL"/>
+<repository location="http://download.eclipse.org/releases/indigo"/>
+</location>
+</locations>
+</target>

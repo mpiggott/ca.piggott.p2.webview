@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: ca.piggott.p2.site.webview;singleton:=true
+Bundle-Version: 0.0.1.qualifier
+Bundle-RequiredExecutionEnvironment: J2SE-1.5,
+ JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .,
+ lib/antlr-2.7.7.jar,
+ lib/stringtemplate-3.2.1.jar
+Export-Package: ca.piggott.p2.site.webview
+Import-Package: org.eclipse.core.runtime,
+ org.eclipse.equinox.p2.metadata,
+ org.eclipse.equinox.p2.query,
+ org.eclipse.equinox.p2.repository,
+ org.eclipse.equinox.p2.repository.metadata

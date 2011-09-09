@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description>
+      p2 Repository WebView Builder
+   </description>
+   <feature url="features/ca.piggott.p2.site.webview.feature_0.0.0.jar" id="ca.piggott.p2.site.webview.feature" version="0.0.0">
+      <category name="p2.repobuilder"/>
+   </feature>
+   <category-def name="p2.repobuilder" label="p2 Repository WebView Builder"/>
+</site>
