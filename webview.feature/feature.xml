@@ -2,7 +2,16 @@
 <feature
       id="ca.piggott.p2.site.webview.feature"
       label="%featureName"
-      version="0.0.1.qualifier">
+      version="0.0.1.qualifier"
+      provider-name="%featureProvider">
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="http://www.eclipse.org/legal/epl-v10.html">
+      
+   </license>
 
    <plugin
          id="ca.piggott.p2.site.webview"
@@ -10,10 +19,12 @@
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
    <plugin
          id="ca.piggott.p2.site.webview.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
 </feature>

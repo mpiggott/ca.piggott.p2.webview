@@ -17,3 +17,5 @@ Bundle-ClassPath: .
 Import-Package: ca.piggott.p2.site.webview,
  org.eclipse.ui,
  org.eclipse.ui.statushandlers
+Bundle-Vendor: Matthew Piggott
+Bundle-Name: p2 Webview UI

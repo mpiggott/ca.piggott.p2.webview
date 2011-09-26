@@ -14,3 +14,5 @@ Import-Package: org.eclipse.core.runtime,
  org.eclipse.equinox.p2.query,
  org.eclipse.equinox.p2.repository,
  org.eclipse.equinox.p2.repository.metadata
+Bundle-Name: p2 Webview
+Bundle-Vendor: Matthew Piggott
