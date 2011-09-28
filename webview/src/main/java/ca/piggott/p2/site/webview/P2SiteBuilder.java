@@ -11,6 +11,7 @@
 package ca.piggott.p2.site.webview;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -82,12 +83,39 @@ public class P2SiteBuilder {
 		}
 	}
 
+	/**
+	 * Populate the default template and write it to the provided {@code OutputStream}.
+	 *
+	 * @param repository repository to serialize
+	 * @param out the output stream
+	 * @throws IOException
+	 */
 	public static void write(IMetadataRepository repository, OutputStream out) throws IOException {
+		InputStream in = null;
+		try {
+			in = P2SiteBuilder.class.getResourceAsStream("template.st");
+			write(repository, in, out);
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+		}
+	}
+
+	/**
+	 * Populate a {@code StringTemplate} provided by an {@code InputStream} and write it to the provided {@code OutputStream}.
+	 *
+	 * @param repository repository to serialize
+	 * @param templateInputStream an {@code InputStream} of a {@code StringTemplate} template
+	 * @param out the output stream
+	 * @throws IOException
+	 */
+	public static void write(IMetadataRepository repository, InputStream templateInputStream, OutputStream out) throws IOException {
 		if (repository == null || out == null) {
 			throw new IllegalArgumentException("Outputstream or Repository is null");
 		}
 
-		StringTemplate body = new StringTemplate(getResource("template.st"));
+		StringTemplate body = new StringTemplate(getResource(templateInputStream));
 		body.setAttribute("categories", getRepository(repository));
 		body.setAttribute("title", repository.getName());
 
@@ -101,7 +129,7 @@ public class P2SiteBuilder {
 			}
 		}
 	}
-	
+
 	private static final IProgressMonitor monitor = new NullProgressMonitor();
 
 	public static Collection<Category> getRepository(IMetadataRepository repository) {
@@ -124,8 +152,8 @@ public class P2SiteBuilder {
 		return new IU(iu.getId(), new VersionedId(iu.getId(), iu.getVersion()).toString(), iu.getProperty(IInstallableUnit.PROP_NAME, null), iu.getProperty(IInstallableUnit.PROP_DESCRIPTION, null));
 	}
 	
-	private static String getResource(String resource) throws IOException {
-		Reader in = new InputStreamReader( P2SiteBuilder.class.getResourceAsStream(resource) );
+	private static String getResource(InputStream stream) throws IOException {
+		Reader in = new InputStreamReader(stream);
 		char[] ch = new char[512];
 		int read = -1;
 		StringBuilder sb = new StringBuilder();
