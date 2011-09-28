@@ -132,7 +132,20 @@ dojo.addOnLoad(function(){
 				<div dojoType="dijit.layout.AccordionPane" title="Available IUs" style="width:690px">
 					<div id='treeNode'>
 						<dl id='iuTree'>
-$body$
+$categories:{category|
+	<dt>
+		<div class='iuId'>$category.versionedId$</div>
+		<div class='iuLabel'>$category.name$</div>
+		<div class='iuDesc'>$category.description$</div>
+	</dt>
+	$category.ius:{iu|
+	<dd>
+		<div class='iuId'>$iu.versionedId$</div>
+		<div class='iuLabel'>$iu.name$</div>
+		<div class='iuDesc'>$iu.description$</div>
+	</dd>
+	}$
+}$
 						</dl>
 					</div>
 				</div>

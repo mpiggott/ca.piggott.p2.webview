@@ -87,12 +87,10 @@ public class P2SiteBuilder {
 			throw new IllegalArgumentException("Outputstream or Repository is null");
 		}
 
-		StringTemplate tree = new StringTemplate(getResource("category.st"));
-		tree.setAttribute("categories", getRepository(repository));
-
 		StringTemplate body = new StringTemplate(getResource("template.st"));
-		body.setAttribute("body", tree.toString());
+		body.setAttribute("categories", getRepository(repository));
 		body.setAttribute("title", repository.getName());
+
 		Writer writer = null;
 		try {
 			writer = new OutputStreamWriter(out);
@@ -115,7 +113,6 @@ public class P2SiteBuilder {
 			}
 			repositoryData.add(category);
 		}
-
 		return repositoryData;
 	}
 
