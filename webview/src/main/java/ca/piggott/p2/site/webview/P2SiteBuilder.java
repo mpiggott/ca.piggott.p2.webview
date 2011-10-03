@@ -31,11 +31,15 @@ import org.antlr.stringtemplate.NoIndentWriter;
 import org.antlr.stringtemplate.StringTemplate;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.equinox.p2.metadata.IArtifactKey;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.metadata.IProvidedCapability;
 import org.eclipse.equinox.p2.metadata.VersionedId;
+import org.eclipse.equinox.p2.metadata.expression.ExpressionUtil;
+import org.eclipse.equinox.p2.query.ExpressionMatchQuery;
 import org.eclipse.equinox.p2.query.IQueryResult;
 import org.eclipse.equinox.p2.query.QueryUtil;
+import org.eclipse.equinox.p2.repository.artifact.IArtifactRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
 public class P2SiteBuilder {
@@ -213,5 +217,34 @@ public class P2SiteBuilder {
 			sb.append(ch, 0, read);
 		}
 		return sb.toString();
+	}
+	public static void writeAllArtifacts(IArtifactRepository artifactRepo, File folder) {
+		Set<IArtifactKey> allArtifacts = artifactRepo.query(new ExpressionMatchQuery<IArtifactKey>(IArtifactKey.class, ExpressionUtil.TRUE_EXPRESSION), new NullProgressMonitor()).toUnmodifiableSet();
+
+		InputStream in = null;
+		try {
+			try {
+				in = P2SiteBuilder.class.getResourceAsStream("allArtifacts.st");
+
+				StringTemplate body = new StringTemplate(getResource(in));
+				body.setAttribute("artifacts", allArtifacts);
+
+				Writer writer = new FileWriter(new File(folder, "allArtifacts.html"));
+				try {
+					body.write(new NoIndentWriter(writer));
+				} finally {
+					if (writer != null) {
+						writer.close();
+					}
+				}
+			} finally {
+				if (in != null) {
+					in.close();
+				}
+			}
+		} catch (IOException e) {
+
+		}
+	
 	}
 }

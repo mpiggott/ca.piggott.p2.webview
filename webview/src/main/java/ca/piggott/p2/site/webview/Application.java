@@ -23,6 +23,9 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.equinox.p2.core.IProvisioningAgent;
 import org.eclipse.equinox.p2.core.IProvisioningAgentProvider;
 import org.eclipse.equinox.p2.core.ProvisionException;
+import org.eclipse.equinox.p2.metadata.IArtifactKey;
+import org.eclipse.equinox.p2.repository.artifact.IArtifactRepository;
+import org.eclipse.equinox.p2.repository.artifact.IArtifactRepositoryManager;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 import org.osgi.framework.BundleContext;
@@ -66,21 +69,43 @@ public class Application implements IApplication {
 		agent = provider.createAgent(null);
 	}
 
+	private IMetadataRepository loadMetadataRepository() {
+		IMetadataRepositoryManager mgr = (IMetadataRepositoryManager) agent.getService(IMetadataRepositoryManager.SERVICE_NAME);
+		System.out.println("Loading metadata repository: " + repository);
+		try {
+			return mgr.loadRepository(repository, new NullProgressMonitor());
+		} catch (ProvisionException e1) {
+			System.err.println("Problem loading metadata repository: " + repository);
+		} catch (OperationCanceledException e1) {
+			// Impossible from CLI
+		}
+		return null;
+	}
+
+	private IArtifactRepository loadArtifactRepository() {
+		IArtifactRepositoryManager mgr = (IArtifactRepositoryManager) agent.getService(IArtifactRepositoryManager.SERVICE_NAME);
+		System.out.println("Loading artifact repository: " + repository);
+		try {
+			return mgr.loadRepository(repository, new NullProgressMonitor());
+		} catch (ProvisionException e1) {
+			System.err.println("Problem loading artifact repository: " + repository);
+		} catch (OperationCanceledException e1) {
+			// Impossible from CLI
+		}
+		return null;
+	}
+	
 	private Object run(String[] args) {
 		if (processArguments(args))
 			return new Integer(-13);
 		
-		IMetadataRepositoryManager mgr = (IMetadataRepositoryManager) agent.getService(IMetadataRepositoryManager.SERVICE_NAME);
-		IMetadataRepository repoGenerated = null;
-		System.out.println("Loading repository: " + repository);
-		try {
-			repoGenerated = mgr.loadRepository(repository, new NullProgressMonitor());
-		} catch (ProvisionException e1) {
-			System.err.println("Problem loading repository: " + repository);
+		IMetadataRepository repoGenerated = loadMetadataRepository();
+		if (repoGenerated == null)
 			return new Integer(-13);
-		} catch (OperationCanceledException e1) {
-			// Impossible from CLI
-		}
+		
+		IArtifactRepository artifactRepo = loadArtifactRepository();
+		if (artifactRepo == null)
+			return new Integer(-13);
 		
 		File folder = getOutputFolder(outputLocation, repoGenerated);
 		if (folder == null) {
@@ -95,6 +120,7 @@ public class Application implements IApplication {
 		try {
 			P2SiteBuilder.writeMainPage(repoGenerated, folder);
 			P2SiteBuilder.writeAllCapabilities(repoGenerated, folder);
+			P2SiteBuilder.writeAllArtifacts(artifactRepo, folder);
 		} catch (IOException e) {
 			System.err.println("Problem writing the file: " + folder.getAbsolutePath());
 			e.printStackTrace();
