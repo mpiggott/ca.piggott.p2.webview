@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="ca.piggot.p2.site.generateWebsite"
+         name="Website generator"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="any"
+            visible="true">
+         <run
+               class="ca.piggott.p2.site.webview.Application">
+         </run>
+      </application>
+   </extension>
+
+</plugin>

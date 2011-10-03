@@ -10,6 +10,10 @@
  *******************************************************************************/
 package ca.piggott.p2.site.webview;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,6 +24,7 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.antlr.stringtemplate.NoIndentWriter;
@@ -27,7 +32,9 @@ import org.antlr.stringtemplate.StringTemplate;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
+import org.eclipse.equinox.p2.metadata.IProvidedCapability;
 import org.eclipse.equinox.p2.metadata.VersionedId;
+import org.eclipse.equinox.p2.query.IQueryResult;
 import org.eclipse.equinox.p2.query.QueryUtil;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
@@ -83,6 +90,9 @@ public class P2SiteBuilder {
 		}
 	}
 
+	public static void writeMainPage(IMetadataRepository repository, File folder) throws FileNotFoundException, IOException {
+		writeMainPage(repository, new FileOutputStream(new File(folder, "repoIndex.html")));
+	}
 	/**
 	 * Populate the default template and write it to the provided {@code OutputStream}.
 	 *
@@ -90,7 +100,7 @@ public class P2SiteBuilder {
 	 * @param out the output stream
 	 * @throws IOException
 	 */
-	public static void write(IMetadataRepository repository, OutputStream out) throws IOException {
+	public static void writeMainPage(IMetadataRepository repository, OutputStream out) throws IOException {
 		InputStream in = null;
 		try {
 			in = P2SiteBuilder.class.getResourceAsStream("template.st");
@@ -101,7 +111,49 @@ public class P2SiteBuilder {
 			}
 		}
 	}
+	
+	private static Collection<IProvidedCapability> getAllCapabilities(IMetadataRepository repository) {
+		IQueryResult<IInstallableUnit> allIUs = repository.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
+		Iterator<IInstallableUnit> iterator = allIUs.iterator();
+		Collection<IProvidedCapability> allCapabilities = new HashSet<IProvidedCapability>();
+		while (iterator.hasNext()) {
+			IInstallableUnit iu = (IInstallableUnit) iterator.next();
+			allCapabilities.addAll(iu.getProvidedCapabilities());			
+		}
+		return allCapabilities;
+	}
+	
+	public static void writeAllCapabilities(IMetadataRepository repository, File folder) throws IOException {
+			Collection<IProvidedCapability> allCapabilities = getAllCapabilities(repository);
+			writeAllCapabilities(allCapabilities, new File(folder, "allCapabilities.html"));
+	}
 
+	private static void writeAllCapabilities(Collection<IProvidedCapability> allCapabilities, File file) {
+		InputStream in = null;
+		try {
+			try {
+				in = P2SiteBuilder.class.getResourceAsStream("allProvidedCapabilities.st");
+
+				StringTemplate body = new StringTemplate(getResource(in));
+				body.setAttribute("capabilities", allCapabilities);
+
+				Writer writer = new FileWriter(file);
+				try {
+					body.write(new NoIndentWriter(writer));
+				} finally {
+					if (writer != null) {
+						writer.close();
+					}
+				}
+			} finally {
+				if (in != null) {
+					in.close();
+				}
+			}
+		} catch (IOException e) {
+
+		}
+	}
 	/**
 	 * Populate a {@code StringTemplate} provided by an {@code InputStream} and write it to the provided {@code OutputStream}.
 	 *
