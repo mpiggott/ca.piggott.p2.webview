@@ -7,12 +7,17 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5,
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/antlr-2.7.7.jar,
- lib/stringtemplate-3.2.1.jar
+ lib/stringtemplate-3.2.1.jar,
+ lib/jcommander-1.17.jar
 Export-Package: ca.piggott.p2.site.webview
 Import-Package: org.eclipse.core.runtime,
+ org.eclipse.equinox.app;version="1.1.0",
+ org.eclipse.equinox.p2.core;version="2.0.0",
  org.eclipse.equinox.p2.metadata,
  org.eclipse.equinox.p2.query,
  org.eclipse.equinox.p2.repository,
- org.eclipse.equinox.p2.repository.metadata
+ org.eclipse.equinox.p2.repository.metadata,
+ org.osgi.framework;version="1.6.0"
 Bundle-Name: p2 Webview
 Bundle-Vendor: Matthew Piggott
+Bundle-Activator: ca.piggott.p2.site.webview.Activator
