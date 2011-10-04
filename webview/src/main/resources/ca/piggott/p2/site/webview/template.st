@@ -12,6 +12,10 @@
      Matthew Piggott - initial API and implementation
 -->
 <title>$title$</title>
+<!-- These two links are here so search engine can find their content and index them -->
+<a href="allArtifacts.html"></a>
+<a href="allProvidedCapabilities.html"></a>
+
 <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.6/dojo/resources/dojo.css"> 
 <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.6/dijit/themes/claro/claro.css">
 <script src="http://ajax.googleapis.com/ajax/libs/dojo/1.6/dojo/dojo.xd.js" djConfig="parseOnLoad:true, isDebug:false" type="text/javascript"></script>

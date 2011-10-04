@@ -14,6 +14,7 @@
 
 <title>All Artifacts</title>
 
+<!-- redirect before the page is completely loaded so the users never have to load it all -->
 <script type="text/javascript">
 <!--
 window.location.replace("./repoIndex.html");
