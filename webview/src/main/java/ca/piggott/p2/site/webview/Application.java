@@ -12,7 +12,6 @@ package ca.piggott.p2.site.webview;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -23,7 +22,6 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.equinox.p2.core.IProvisioningAgent;
 import org.eclipse.equinox.p2.core.IProvisioningAgentProvider;
 import org.eclipse.equinox.p2.core.ProvisionException;
-import org.eclipse.equinox.p2.metadata.IArtifactKey;
 import org.eclipse.equinox.p2.repository.artifact.IArtifactRepository;
 import org.eclipse.equinox.p2.repository.artifact.IArtifactRepositoryManager;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
