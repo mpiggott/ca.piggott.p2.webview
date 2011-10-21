@@ -10,8 +10,8 @@
  *******************************************************************************/
 package ca.piggott.p2.site.webview.ui;
 
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 
@@ -131,7 +131,7 @@ public class P2SiteBuilderDialog extends TitleAreaDialog implements ModifyListen
 
 	protected void okPressed() {
 		try {
-			P2SiteBuilder.writeMainPage(ProvisioningUI.getDefaultUI().loadMetadataRepository((URI) ((IStructuredSelection)comboViewer.getSelection()).getFirstElement(), false, new NullProgressMonitor()), new File(text.getText()));
+			P2SiteBuilder.writeIndex(ProvisioningUI.getDefaultUI().loadMetadataRepository((URI) ((IStructuredSelection)comboViewer.getSelection()).getFirstElement(), false, new NullProgressMonitor()), new FileOutputStream(text.getText()));
 			super.okPressed();
 		} catch (ProvisionException e) {
 			this.setMessage(e.getStatus().getMessage(), IMessageProvider.ERROR);

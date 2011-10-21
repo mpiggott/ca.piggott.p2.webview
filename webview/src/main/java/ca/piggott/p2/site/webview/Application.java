@@ -11,6 +11,7 @@
 package ca.piggott.p2.site.webview;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 
@@ -28,6 +29,8 @@ import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+
+import ca.piggott.p2.site.webview.internal.URIConverter;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -116,9 +119,9 @@ public class Application implements IApplication {
 		}
 		System.out.println("Writing out website.");
 		try {
-			P2SiteBuilder.writeMainPage(repoGenerated, folder);
-			P2SiteBuilder.writeAllCapabilities(repoGenerated, folder);
-			P2SiteBuilder.writeAllArtifacts(artifactRepo, folder);
+			P2SiteBuilder.writeIndex(repoGenerated, new FileOutputStream(new File(folder, "index.html")));
+			P2SiteBuilder.writeAllCapabilities(repoGenerated, new File(folder, "allCapabilities.html"));
+			P2SiteBuilder.writeAllArtifacts(artifactRepo, new File(folder, "allArtifacts.html"));
 		} catch (IOException e) {
 			System.err.println("Problem writing the file: " + folder.getAbsolutePath());
 			e.printStackTrace();

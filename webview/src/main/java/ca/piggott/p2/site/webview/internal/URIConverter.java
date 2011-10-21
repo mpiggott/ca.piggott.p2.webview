@@ -8,7 +8,7 @@
  * Contributors:
  *     Pascal Rapicault - initial API and implementation
  *******************************************************************************/
-package ca.piggott.p2.site.webview;
+package ca.piggott.p2.site.webview.internal;
 
 import java.net.URI;
 import java.net.URISyntaxException;

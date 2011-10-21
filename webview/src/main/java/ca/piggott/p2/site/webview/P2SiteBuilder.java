@@ -11,8 +11,6 @@
 package ca.piggott.p2.site.webview;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +20,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -42,61 +39,14 @@ import org.eclipse.equinox.p2.query.QueryUtil;
 import org.eclipse.equinox.p2.repository.artifact.IArtifactRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
+import ca.piggott.p2.site.webview.internal.Category;
+import ca.piggott.p2.site.webview.internal.IU;
+import ca.piggott.p2.site.webview.internal.Template;
+
 public class P2SiteBuilder {
-	
-	public static class IU {
-		private String id;
-		private String versionedId;
-		private String name;
-		private String description;
 
-		public IU(String id, String versionedId, String name, String description) {
-			this.id = id;
-			this.versionedId = versionedId;
-			this.name = name;
-			this.description = description;
-		}
+	private static final IProgressMonitor monitor = new NullProgressMonitor();
 
-		public String getName() {
-			return name;
-		}
-
-		public String getDescription() {
-			return description == null ? name : description;
-		}
-
-		public String getId() {
-			return id;
-		}
-
-		public String getVersionedId() {
-			return versionedId;
-		}
-		
-		public int hashCode() {
-			return versionedId.hashCode();
-		}
-	}
-
-	public static class Category extends IU {
-		private final Set<IU> ius = new HashSet<IU>();
-
-		public Category(String id, String versionedId, String name,	String description) {
-			super(id, versionedId, name, description);
-		}
-
-		public void addIU(IU iu) {
-			ius.add(iu);
-		}
-
-		public Iterable<IU> getIus() {
-			return Collections.unmodifiableCollection(ius);
-		}
-	}
-
-	public static void writeMainPage(IMetadataRepository repository, File folder) throws FileNotFoundException, IOException {
-		writeMainPage(repository, new FileOutputStream(new File(folder, "repoIndex.html")));
-	}
 	/**
 	 * Populate the default template and write it to the provided {@code OutputStream}.
 	 *
@@ -104,41 +54,75 @@ public class P2SiteBuilder {
 	 * @param out the output stream
 	 * @throws IOException
 	 */
-	public static void writeMainPage(IMetadataRepository repository, OutputStream out) throws IOException {
+	public static void writeIndex(IMetadataRepository repository, OutputStream out) throws IOException {
 		InputStream in = null;
 		try {
 			in = P2SiteBuilder.class.getResourceAsStream("template.st");
-			write(repository, in, out);
+			writeIndex(repository, in, out);
 		} finally {
 			if (in != null) {
 				in.close();
 			}
 		}
 	}
-	
-	private static Collection<IProvidedCapability> getAllCapabilities(IMetadataRepository repository) {
-		IQueryResult<IInstallableUnit> allIUs = repository.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
-		Iterator<IInstallableUnit> iterator = allIUs.iterator();
-		Collection<IProvidedCapability> allCapabilities = new HashSet<IProvidedCapability>();
-		while (iterator.hasNext()) {
-			IInstallableUnit iu = (IInstallableUnit) iterator.next();
-			allCapabilities.addAll(iu.getProvidedCapabilities());			
-		}
-		return allCapabilities;
-	}
-	
-	public static void writeAllCapabilities(IMetadataRepository repository, File folder) throws IOException {
-			Collection<IProvidedCapability> allCapabilities = getAllCapabilities(repository);
-			writeAllCapabilities(allCapabilities, new File(folder, "allCapabilities.html"));
+
+	/**
+	 * Populate a {@code StringTemplate} provided by an {@code InputStream} and write it to the provided {@code OutputStream}.
+	 *
+	 * @param repository repository to serialize
+	 * @param templateInputStream an {@code InputStream} of a {@code StringTemplate} template
+	 * @param out the output stream
+	 * @throws IOException
+	 */
+	public static void writeIndex(IMetadataRepository repository, InputStream templateInputStream, OutputStream out) throws IOException {
+		writeIndex(repository, templateInputStream, out, true);
 	}
 
-	private static void writeAllCapabilities(Collection<IProvidedCapability> allCapabilities, File file) {
+	/**
+	 * Populate a {@code StringTemplate} provided by an {@code InputStream} and write it to the provided {@code OutputStream}.
+	 *
+	 * @param repository repository to serialize
+	 * @param templateInputStream an {@code InputStream} of a {@code StringTemplate} template
+	 * @param out the output stream
+	 * @param categorizedOnly include categories
+	 * @throws IOException
+	 */
+	public static void writeIndex(IMetadataRepository repository, InputStream templateInputStream, OutputStream out, boolean categorizedOnly) throws IOException {
+		if (repository == null || out == null) {
+			throw new IllegalArgumentException("Outputstream or Repository is null");
+		}
+
+		Template template = new Template();
+		template.setJsDojo(getResource("javascript_dojo.st"));
+		template.setJsTree(getResource("javascript_tree.st"));
+		template.setStyleCss(getResource("style_css.st"));
+		template.setStyleDojo(getResource("style_dojo.st"));
+		template.setLinks(categorizedOnly ? "" : getResource("links.st"));
+
+		StringTemplate body = new StringTemplate(toString(templateInputStream));
+		body.setAttribute("categories", getCategories(repository));
+		body.setAttribute("title", repository.getName());
+		body.setAttribute("template", template);
+
+		Writer writer = null;
+		try {
+			writer = new OutputStreamWriter(out);
+			body.write(new NoIndentWriter(writer));
+		} finally {
+			if (writer != null) {
+				writer.close();
+			}
+		}
+	}
+
+	public static void writeAllCapabilities(IMetadataRepository repository, File file) {
 		InputStream in = null;
 		try {
 			try {
 				in = P2SiteBuilder.class.getResourceAsStream("allProvidedCapabilities.st");
 
-				StringTemplate body = new StringTemplate(getResource(in));
+				Collection<IProvidedCapability> allCapabilities = getAllCapabilities(repository);
+				StringTemplate body = new StringTemplate(toString(in));
 				body.setAttribute("capabilities", allCapabilities);
 
 				Writer writer = new FileWriter(file);
@@ -158,67 +142,8 @@ public class P2SiteBuilder {
 
 		}
 	}
-	/**
-	 * Populate a {@code StringTemplate} provided by an {@code InputStream} and write it to the provided {@code OutputStream}.
-	 *
-	 * @param repository repository to serialize
-	 * @param templateInputStream an {@code InputStream} of a {@code StringTemplate} template
-	 * @param out the output stream
-	 * @throws IOException
-	 */
-	public static void write(IMetadataRepository repository, InputStream templateInputStream, OutputStream out) throws IOException {
-		if (repository == null || out == null) {
-			throw new IllegalArgumentException("Outputstream or Repository is null");
-		}
 
-		StringTemplate body = new StringTemplate(getResource(templateInputStream));
-		body.setAttribute("categories", getRepository(repository));
-		body.setAttribute("title", repository.getName());
-
-		Writer writer = null;
-		try {
-			writer = new OutputStreamWriter(out);
-			body.write(new NoIndentWriter(writer));
-		} finally {
-			if (writer != null) {
-				writer.close();
-			}
-		}
-	}
-
-	private static final IProgressMonitor monitor = new NullProgressMonitor();
-
-	public static Collection<Category> getRepository(IMetadataRepository repository) {
-		Set<Category> repositoryData = new HashSet<Category>();
-		for (IInstallableUnit cat : repository.query(QueryUtil.createIUCategoryQuery(), monitor).toSet()) {
-			Category category = getCategory(cat);
-			for (IInstallableUnit iu : repository.query(QueryUtil.createIUCategoryMemberQuery(cat), monitor).toSet()) {
-				category.addIU(getIU(iu));
-			}
-			repositoryData.add(category);
-		}
-		return repositoryData;
-	}
-
-	private static Category getCategory(IInstallableUnit iu) {
-		return new Category(iu.getId(), new VersionedId(iu.getId(), iu.getVersion()).toString(), iu.getProperty(IInstallableUnit.PROP_NAME, null), iu.getProperty(IInstallableUnit.PROP_DESCRIPTION, null));
-	}
-
-	private static IU getIU(IInstallableUnit iu) {
-		return new IU(iu.getId(), new VersionedId(iu.getId(), iu.getVersion()).toString(), iu.getProperty(IInstallableUnit.PROP_NAME, null), iu.getProperty(IInstallableUnit.PROP_DESCRIPTION, null));
-	}
-	
-	private static String getResource(InputStream stream) throws IOException {
-		Reader in = new InputStreamReader(stream);
-		char[] ch = new char[512];
-		int read = -1;
-		StringBuilder sb = new StringBuilder();
-		while ((read = in.read(ch)) > 0 ) {
-			sb.append(ch, 0, read);
-		}
-		return sb.toString();
-	}
-	public static void writeAllArtifacts(IArtifactRepository artifactRepo, File folder) {
+	public static void writeAllArtifacts(IArtifactRepository artifactRepo, File file) {
 		Set<IArtifactKey> allArtifacts = artifactRepo.query(new ExpressionMatchQuery<IArtifactKey>(IArtifactKey.class, ExpressionUtil.TRUE_EXPRESSION), new NullProgressMonitor()).toUnmodifiableSet();
 
 		InputStream in = null;
@@ -226,10 +151,10 @@ public class P2SiteBuilder {
 			try {
 				in = P2SiteBuilder.class.getResourceAsStream("allArtifacts.st");
 
-				StringTemplate body = new StringTemplate(getResource(in));
+				StringTemplate body = new StringTemplate(toString(in));
 				body.setAttribute("artifacts", allArtifacts);
 
-				Writer writer = new FileWriter(new File(folder, "allArtifacts.html"));
+				Writer writer = new FileWriter(file);
 				try {
 					body.write(new NoIndentWriter(writer));
 				} finally {
@@ -245,6 +170,58 @@ public class P2SiteBuilder {
 		} catch (IOException e) {
 
 		}
+	}
+
+	private static Collection<IProvidedCapability> getAllCapabilities(IMetadataRepository repository) {
+		IQueryResult<IInstallableUnit> allIUs = repository.query(QueryUtil.ALL_UNITS, new NullProgressMonitor());
+		Iterator<IInstallableUnit> iterator = allIUs.iterator();
+		Collection<IProvidedCapability> allCapabilities = new HashSet<IProvidedCapability>();
+		while (iterator.hasNext()) {
+			IInstallableUnit iu = (IInstallableUnit) iterator.next();
+			allCapabilities.addAll(iu.getProvidedCapabilities());
+		}
+		return allCapabilities;
+	}
+
+	private static Collection<Category> getCategories(IMetadataRepository repository) {
+		Set<Category> repositoryData = new HashSet<Category>();
+		for (IInstallableUnit cat : repository.query(QueryUtil.createIUCategoryQuery(), monitor).toSet()) {
+			Category category = toCategory(cat);
+			for (IInstallableUnit iu : repository.query(QueryUtil.createIUCategoryMemberQuery(cat), monitor).toSet()) {
+				category.addIU(toIU(iu));
+			}
+			repositoryData.add(category);
+		}
+		return repositoryData;
+	}
+
+	private static String getResource(String file) throws IOException {
+		InputStream in = null;
+		try {
+			return toString(P2SiteBuilder.class.getResourceAsStream(file));
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+		}
+	}
 	
+	private static String toString(InputStream stream) throws IOException {
+		Reader in = new InputStreamReader(stream);
+		char[] ch = new char[512];
+		int read = -1;
+		StringBuilder sb = new StringBuilder();
+		while ((read = in.read(ch)) > 0 ) {
+			sb.append(ch, 0, read);
+		}
+		return sb.toString();
+	}
+
+	private static Category toCategory(IInstallableUnit iu) {
+		return new Category(iu.getId(), new VersionedId(iu.getId(), iu.getVersion()).toString(), iu.getProperty(IInstallableUnit.PROP_NAME, null), iu.getProperty(IInstallableUnit.PROP_DESCRIPTION, null));
+	}
+
+	private static IU toIU(IInstallableUnit iu) {
+		return new IU(iu.getId(), new VersionedId(iu.getId(), iu.getVersion()).toString(), iu.getProperty(IInstallableUnit.PROP_NAME, null), iu.getProperty(IInstallableUnit.PROP_DESCRIPTION, null));
 	}
 }
