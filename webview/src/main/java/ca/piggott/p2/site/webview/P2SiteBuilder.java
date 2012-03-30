@@ -11,6 +11,7 @@
 package ca.piggott.p2.site.webview;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,8 +21,10 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.antlr.stringtemplate.NoIndentWriter;
@@ -31,7 +34,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.equinox.p2.metadata.IArtifactKey;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.metadata.IProvidedCapability;
-import org.eclipse.equinox.p2.metadata.VersionedId;
 import org.eclipse.equinox.p2.metadata.expression.ExpressionUtil;
 import org.eclipse.equinox.p2.query.ExpressionMatchQuery;
 import org.eclipse.equinox.p2.query.IQueryResult;
@@ -52,12 +54,16 @@ public class P2SiteBuilder {
 	 *
 	 * @param repository repository to serialize
 	 * @param out the output stream
+	 * @param template to use instead of the default one
 	 * @throws IOException
 	 */
-	public static void writeIndex(IMetadataRepository repository, OutputStream out) throws IOException {
+	public static void writeIndex(IMetadataRepository repository, OutputStream out, File template) throws IOException {
 		InputStream in = null;
 		try {
-			in = P2SiteBuilder.class.getResourceAsStream("template.st");
+			if (template == null)
+				in = P2SiteBuilder.class.getResourceAsStream("template.st");
+			else 
+				in = new FileInputStream(template);
 			writeIndex(repository, in, out);
 		} finally {
 			if (in != null) {
@@ -93,16 +99,13 @@ public class P2SiteBuilder {
 		}
 
 		Template template = new Template();
-		template.setJsDojo(getResource("javascript_dojo.st"));
-		template.setJsTree(getResource("javascript_tree.st"));
-		template.setStyleCss(getResource("style_css.st"));
-		template.setStyleDojo(getResource("style_dojo.st"));
-		template.setLinks(categorizedOnly ? "" : getResource("links.st"));
+		template.setTreeScript(getResource("treescript.js"));
 
 		StringTemplate body = new StringTemplate(toString(templateInputStream));
 		body.setAttribute("categories", getCategories(repository));
-		body.setAttribute("title", repository.getName());
+		body.setAttribute("repoName", repository.getName());
 		body.setAttribute("template", template);
+		body.setAttribute("repoURL", repository.getLocation());
 
 		Writer writer = null;
 		try {
@@ -184,15 +187,20 @@ public class P2SiteBuilder {
 	}
 
 	private static Collection<Category> getCategories(IMetadataRepository repository) {
-		Set<Category> repositoryData = new HashSet<Category>();
+		Map<String, Category> repositoryData = new HashMap<String, Category>();
 		for (IInstallableUnit cat : repository.query(QueryUtil.createIUCategoryQuery(), monitor).toSet()) {
-			Category category = toCategory(cat);
+
+			//We merge the categories with the same id
+			Category category = repositoryData.get(cat.getId());
+			if (category == null) {
+				category = toCategory(cat);
+				repositoryData.put(cat.getId(), category);
+			}
 			for (IInstallableUnit iu : repository.query(QueryUtil.createIUCategoryMemberQuery(cat), monitor).toSet()) {
 				category.addIU(toIU(iu));
 			}
-			repositoryData.add(category);
 		}
-		return repositoryData;
+		return repositoryData.values();
 	}
 
 	private static String getResource(String file) throws IOException {
@@ -218,10 +226,10 @@ public class P2SiteBuilder {
 	}
 
 	private static Category toCategory(IInstallableUnit iu) {
-		return new Category(iu.getId(), new VersionedId(iu.getId(), iu.getVersion()).toString(), iu.getProperty(IInstallableUnit.PROP_NAME, null), iu.getProperty(IInstallableUnit.PROP_DESCRIPTION, null));
+		return new Category(iu.getId(), iu.getVersion(), iu.getProperty(IInstallableUnit.PROP_NAME, null), iu.getProperty(IInstallableUnit.PROP_DESCRIPTION, null).replace('"', '\''));
 	}
 
 	private static IU toIU(IInstallableUnit iu) {
-		return new IU(iu.getId(), new VersionedId(iu.getId(), iu.getVersion()).toString(), iu.getProperty(IInstallableUnit.PROP_NAME, null), iu.getProperty(IInstallableUnit.PROP_DESCRIPTION, null));
+		return new IU(iu.getId(), iu.getVersion(), iu.getProperty(IInstallableUnit.PROP_NAME, null), iu.getProperty(IInstallableUnit.PROP_DESCRIPTION, null).replace('"', '\''));
 	}
 }

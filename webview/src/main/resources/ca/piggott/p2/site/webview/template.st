@@ -1,60 +1,56 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<!DOCTYPE html
+PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<!--
- Copyright (c) 2011 Matthew Piggott. All rights reserved. This
- All rights reserved. This program and the accompanying materials
- are made available under the terms of the Eclipse Public License v1.0
- which accompanies this distribution, and is available at
- http://www.eclipse.org/legal/epl-v10.html
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" src="_lib/jquery.js"></script>
+	<script type="text/javascript" src="_lib/jquery.cookie.js"></script>
+	<script type="text/javascript" src="_lib/jquery.hotkeys.js"></script>
+	<script type="text/javascript" src="jquery.jstree.js"></script>
 
- Contributors:
-     Matthew Piggott - initial API and implementation
--->
-<title>$title$</title>
+<!-- 	<link type="text/css" rel="stylesheet" href="syntax/!style.css"/> -->
+<!-- 	<link type="text/css" rel="stylesheet" href="!style.css"/> -->
+<!-- 	<script type="text/javascript" src="syntax/!script.js"></script> -->
+</head>
+<body>
 
-$template.styleDojo$
-$template.styleCss$
-$template.jsDojo$
-$template.jsTree$
-	</head>
-	<body class="claro" style="width:100%">
-		<div dojoType="dijit.layout.BorderContainer" style="width: 700px; height: 700px;">
-			<div dojoType="dijit.layout.ContentPane" region="top">
-				<h2>$title$</h2>
-			</div>
-			<div dojoType="dijit.layout.AccordionContainer" region="leading" style="height:50%; width:690px">
-				<div dojoType="dijit.layout.AccordionPane" title="Available IUs" style="width:690px">
-					<div id='treeNode'>
-						<dl id='iuTree'>
-$categories:{category|
-	<dt>
-		<div class='iuId'>$category.versionedId$</div>
-		<div class='iuLabel'>$category.name$</div>
-		<div class='iuDesc'>$category.description$</div>
-	</dt>
-	$category.ius:{iu|
-	<dd>
-		<div class='iuId'>$iu.versionedId$</div>
-		<div class='iuLabel'>$iu.name$</div>
-		<div class='iuDesc'>$iu.description$</div>
-	</dd>
+
+<div class="panel">
+
+<h3>$repoName$</h3>
+<div>
+Search: <input type="text" class="text" id="searchText" style=""/>
+</div>
+<div id="repoTree" class="p2RepoContainer" style="height:500px; overflow: auto; width: 500px; resize: both">
+	<ul>
+	$categories:{category|
+	<li rel="p2Category" description="$category.description$">
+		<a href="#">$category.name$</a>
+			$category.ius:{iu|
+			<ul>
+				<li iu_id="$iu.id$" iu_version="$iu.version$" rel="p2IU" description="$iu.description$">
+					<a href="#">$iu.name$</a>
+				</li>
+			</ul>
+			}$
+	</li>
 	}$
-}$
-						</dl>
-					</div>
-				</div>
-			</div>
-			<div dojoType="dijit.layout.AccordionContainer" region="bottom" style="height: 14EM">
-				<div dojoType="dijit.layout.AccordionPane" title="Description" id='iuDescription'></div>
-			</div>
-		</div>
-		<button dojoType="dijit.form.Button" id="help" iconClass="dijitEditorIcon helpEditorIcon" type="button">
-		    Help!
-            <script type="dojo/method" data-dojo-event="onClick" data-dojo-args="evt">
-            	window.location = 'http://help.eclipse.org/helios/index.jsp?topic=/org.eclipse.platform.doc.user/tasks/tasks-127.htm';
-            </script>
-		</button>
-$template.links$
-	</body>
+	</ul>
+</div>
+
+
+<div id="description"></div>
+<input type="button" class="button" value="Export" id="export" style=""/>
+
+<a href="allArtifacts.html"></a>
+<a href="allCapabilities.html"></a>
+
+</div>
+
+$template.treeScript$
+<script type="text/javascript" >
+	repoURL = '$repoURL$';
+</script>
+</body>
 </html>

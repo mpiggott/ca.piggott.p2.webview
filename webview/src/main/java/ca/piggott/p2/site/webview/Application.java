@@ -14,9 +14,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -41,6 +44,9 @@ public class Application implements IApplication {
 	private URI repository;
 	@Parameter( names = { "-o", "-output"}, description = "Folder in which the webpage is generated")
 	private File outputLocation;
+	
+	@Parameter( names = { "-t", "-template"} , description = "Template to use")
+	private File template;
 	
 	private IProvisioningAgent agent;
 	private ServiceReference<IProvisioningAgentProvider> agentProviderRef;
@@ -96,6 +102,16 @@ public class Application implements IApplication {
 		return null;
 	}
 	
+	private File getjsTreeFolder() {
+		URL res = FileLocator.find(Activator.getContext().getBundle(), new Path("ca/piggott/p2/site/jsTree"), null);
+		try {
+			res = FileLocator.toFileURL(res);
+		} catch (IOException e1) {
+			//Can't happen
+		}
+		return new File(res.getFile());
+	}
+	
 	private Object run(String[] args) {
 		if (processArguments(args))
 			return new Integer(-13);
@@ -119,9 +135,10 @@ public class Application implements IApplication {
 		}
 		System.out.println("Writing out website.");
 		try {
-			P2SiteBuilder.writeIndex(repoGenerated, new FileOutputStream(new File(folder, "index.html")));
+			P2SiteBuilder.writeIndex(repoGenerated, new FileOutputStream(new File(folder, "index.html")), template);
 			P2SiteBuilder.writeAllCapabilities(repoGenerated, new File(folder, "allCapabilities.html"));
 			P2SiteBuilder.writeAllArtifacts(artifactRepo, new File(folder, "allArtifacts.html"));
+			FileCopyUtil.copyFolder(getjsTreeFolder().getAbsolutePath(), folder.getAbsolutePath());
 		} catch (IOException e) {
 			System.err.println("Problem writing the file: " + folder.getAbsolutePath());
 			e.printStackTrace();

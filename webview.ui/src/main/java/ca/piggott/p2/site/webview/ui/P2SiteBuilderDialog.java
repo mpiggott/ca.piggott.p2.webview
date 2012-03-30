@@ -131,7 +131,7 @@ public class P2SiteBuilderDialog extends TitleAreaDialog implements ModifyListen
 
 	protected void okPressed() {
 		try {
-			P2SiteBuilder.writeIndex(ProvisioningUI.getDefaultUI().loadMetadataRepository((URI) ((IStructuredSelection)comboViewer.getSelection()).getFirstElement(), false, new NullProgressMonitor()), new FileOutputStream(text.getText()));
+			P2SiteBuilder.writeIndex(ProvisioningUI.getDefaultUI().loadMetadataRepository((URI) ((IStructuredSelection)comboViewer.getSelection()).getFirstElement(), false, new NullProgressMonitor()), new FileOutputStream(text.getText()), null);
 			super.okPressed();
 		} catch (ProvisionException e) {
 			this.setMessage(e.getStatus().getMessage(), IMessageProvider.ERROR);

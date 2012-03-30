@@ -1,14 +1,17 @@
 package ca.piggott.p2.site.webview.internal;
 
+import org.eclipse.equinox.p2.metadata.Version;
+import org.eclipse.equinox.p2.metadata.VersionedId;
+
 public class IU {
 	private String id;
-	private String versionedId;
+	private Version version;
 	private String name;
 	private String description;
 
-	public IU(String id, String versionedId, String name, String description) {
+	public IU(String id, Version version, String name, String description) {
 		this.id = id;
-		this.versionedId = versionedId;
+		this.version = version;
 		this.name = name;
 		this.description = description;
 	}
@@ -26,10 +29,14 @@ public class IU {
 	}
 
 	public String getVersionedId() {
-		return versionedId;
+		return new VersionedId(id, version).toString();
 	}
 
+	public Version getVersion() {
+		return version;
+	}
+	
 	public int hashCode() {
-		return versionedId.hashCode();
+		return id.hashCode() + version.hashCode();
 	}
 }

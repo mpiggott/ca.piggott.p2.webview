@@ -17,15 +17,24 @@
 <!-- redirect before the page is completely loaded so the users never have to load it all -->
 <script type="text/javascript">
 <!--
-window.location.replace("./repoIndex.html");
+window.location.replace("./index.html");
 //-->
 </script>
 
 </head>
 <body>
+<div>
+	<dl id='ProvidedCapabilities'>
 $capabilities:{capability|
-	$capability.namespace$/$capability.name$/$capability.version$
 	
+	<dt>
+		$capability.namespace$/$capability.name$/$capability.version$
+		<div class='capability.namespace'>$capability.namespace$</div>
+		<div class='capability.name'>$capability.name$</div>
+		<div class='capability.version'>$capability.version$</div>
+	</dt>	
 }$
+	</dl>
+</div>
 </body>
 </html>

@@ -17,15 +17,25 @@
 <!-- redirect before the page is completely loaded so the users never have to load it all -->
 <script type="text/javascript">
 <!--
-window.location.replace("./repoIndex.html");
+window.location.replace("./index.html");
 //-->
 </script>
 
 </head>
 <body>
 
+<div>
+	<dl id='ListOfArtifacts'>
 $artifacts:{artifact|
-	$artifact.classifier$/$artifact.id$/$artifact.version$
+	<dt>
+		$artifact.classifier$/$artifact.id$/$artifact.version$
+		<div class='artifact.classifier'>$artifact.classifier$</div>
+		<div class='artifact.id'>$artifact.id$</div>
+		<div class='artifact.version'>$artifact.version$</div>
+	</dt>
+	
 }$
+	</dl>
+</div>
 </body>
 </html>
